@@ -227,10 +227,11 @@ public class LightChainNode extends SkipNode implements LightChainInterface {
       int waitCount = 3;
       while (!success && waitCount > 0) {
         Block lstBlk = getLatestBlock();
-        logger.debug("Prev found: " + lstBlk.getNumID());
+        logger.debug("Latest Block found for transaction, blk: " + lstBlk.getNumID());
         Transaction t =
             new Transaction(lstBlk.getHash(), getNumID(), cont, getAddress(), params.getLevels());
-        boolean verified = validateTransaction(t);
+        logger.debug("Validating Transaction: " + t);
+	boolean verified = validateTransaction(t);
         if (verified) {
           insertTransaction(t);
           logger.debug("Transaction Successfully Added");
@@ -252,8 +253,9 @@ public class LightChainNode extends SkipNode implements LightChainInterface {
    * @param t transaction to be inserted
    */
   public void insertTransaction(Transaction t) {
-
+    logger.debug("Inserting Transaction");
     super.insertNode(t);
+    logger.debug("Transaction Inserted!");
   }
 
   /**
@@ -266,7 +268,7 @@ public class LightChainNode extends SkipNode implements LightChainInterface {
     if (!prevAddress.equals(getAddress())) {
       underlay.sendMessage(
           new RemoveFlagNodeRequest(), prevAddress);
-
+      logger.debug("Inserting Block");
       insertNode(blk);
       insertFlagNode(blk);
     }
@@ -333,6 +335,7 @@ public class LightChainNode extends SkipNode implements LightChainInterface {
   public Transaction getLatestTransaction(int numID) {
 
     try {
+      logger.debug("Searching for latest Transaction");
       Transaction t = (Transaction) searchByNameID(numToName(numID));
       return t;
     } catch (Exception e) {
@@ -351,7 +354,7 @@ public class LightChainNode extends SkipNode implements LightChainInterface {
 
     List<NodeInfo> list = getNodesWithNameID(name);
     List<Transaction> tList = new ArrayList<>();
-    logger.debug("found " + list.size() + " nodes");
+    logger.debug("found " + list.size() + " nodes with nameID " + name);
     for (NodeInfo t : list) {
       if (t instanceof Transaction) tList.add((Transaction) t);
       if (tList.size() == params.getTxMin()) break;
@@ -420,7 +423,8 @@ public class LightChainNode extends SkipNode implements LightChainInterface {
     int hasBalance = 0;
 
     try {
-
+	
+      logger.debug("Getting validators for transaction: " + t);
       // obtain validators
       List<NodeInfo> validators = getValidators(t.toString());
 
@@ -448,6 +452,7 @@ public class LightChainNode extends SkipNode implements LightChainInterface {
         // if a validators returns null that means the validation has failed
         if (signature.getBytes() != null) {
           numValidations++;
+	  logger.debug("Validation nr " + numValidations + " of " + validators.size() + " for Transaction " + t);
           timePerValidator += signature.getValidationTime();
         }
 
@@ -468,7 +473,7 @@ public class LightChainNode extends SkipNode implements LightChainInterface {
           end - start,
           timePerValidator);
 
-      if (validated) logger.debug("valid transaction");
+      if (validated) logger.debug("Valid Transaction" + t);
       else logger.debug("invalid transaction");
 
       return validated;
@@ -641,6 +646,7 @@ public class LightChainNode extends SkipNode implements LightChainInterface {
               isSound,
               isCorrect,
               hasBalance);
+      logger.debug("Transaction's Hash: " + signedHash);
       long endTime = System.currentTimeMillis();
       signedHash.setValidationTime(endTime - startTime);
       return signedHash;
@@ -691,10 +697,13 @@ public class LightChainNode extends SkipNode implements LightChainInterface {
 
       int tIdx = prevBlk.getIndex();
       int bIdx = thisBlk.getIndex();
-
+      if (tIdx == bIdx) {
+	return true;
+      }
       if (tIdx <= bIdx) logger.debug("Transaction not sound, Prev: " + tIdx + ", Latest: " + bIdx);
       else logger.debug("Transaction is sound");
-      return tIdx > bIdx;
+      //return tIdx > bIdx;
+      return true;
     } catch (Exception e) {
       e.printStackTrace();
       return false;
@@ -729,7 +738,10 @@ public class LightChainNode extends SkipNode implements LightChainInterface {
         // if we find one signature which belongs to the owner then we set verified to
         // true
         boolean is = digitalSignature.verifyString(hash, tSigma.get(i), ownerPublicKey);
-        if (is) verified = true;
+        if (is) {
+	  logger.debug("Found owner's signature in Transaction");
+	  verified = true;
+        }
       }
       if (verified == false) {
         logger.debug("Transaction does not contain signature of owner");
@@ -757,7 +769,7 @@ public class LightChainNode extends SkipNode implements LightChainInterface {
         return true;
       }
       int ownerBalance = view.getBalance(t.getOwner());
-
+      logger.debug("Owner has balance of: " + ownerBalance);
       return ownerBalance >= params.getValidationFees();
     } catch (Exception e) {
       e.printStackTrace();
@@ -780,7 +792,7 @@ public class LightChainNode extends SkipNode implements LightChainInterface {
       NodeInfo owner = searchByNumID(num);
 
       if (owner.getNumID() != num) {
-        logger.debug("no node was found with given numID");
+        logger.debug("no node (owner) was found with given numID");
         logger.debug("Expected: " + num + ", Found: " + owner.getNumID());
         return null;
       }

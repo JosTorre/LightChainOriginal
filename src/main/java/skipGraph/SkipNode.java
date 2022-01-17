@@ -151,7 +151,7 @@ public class SkipNode implements SkipGraphNode {
      */
     public void insertNode(NodeInfo insertedNode) {
         try {
-            logger.debug("Inserting: " + insertedNode.getNumID());
+            logger.debug("Inserting: " + insertedNode.getNumID() + "with class: " + insertedNode.getClass());
             // We search through the introducer node to find the node with
             // the closest num ID
             NodeInfo closestNode;
@@ -226,7 +226,8 @@ public class SkipNode implements SkipGraphNode {
             // the neighbors of the inserted nodes at level i+1
 
             int level = Const.ZERO_LEVEL;
-            while (level < maxLevels) {
+            logger.info("Max Levels: " + maxLevels);
+	    while (level < maxLevels) {
 
                 if (leftNode != null) {
                     NodeInfoResponse response = NodeInfoResponseOf(underlay.sendMessage(
@@ -295,7 +296,7 @@ public class SkipNode implements SkipGraphNode {
      */
     public NodeInfo insertSearch(int level, int direction, int nodeNumID, String target) {
         try {
-            logger.debug("Inserting " + target + " at level " + level);
+            logger.debug("Inserting " + target + " at level " + level + "with class: " + target.getClass());
             NodeInfo currentNode = lookup.get(nodeNumID);
 
             if (currentNode == null)
