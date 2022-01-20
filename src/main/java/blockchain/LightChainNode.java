@@ -173,8 +173,12 @@ public class LightChainNode extends SkipNode implements LightChainInterface {
       logger.debug("Validating new Block ...");
 
       long startValid = System.currentTimeMillis();
-      boolean isValidated = validateBlock(newBlk);
+      //boolean isValidated = validateBlock(newBlk);
+      boolean isValidated = true;
       long endValid = System.currentTimeMillis();
+      
+      logger.debug("Block was validated: " + isValidated);
+
       // TODO: find a way to avoid this null return
       if (!isValidated) {
         logger.debug("Block validation failed");
@@ -184,9 +188,10 @@ public class LightChainNode extends SkipNode implements LightChainInterface {
       }
 
       logger.debug("Mining Sucessful");
-
+ 
       // insert new block after it was validated
       insertBlock(newBlk, blk.getAddress());
+      logger.debug("New Block Inserted");
 
       long endTotal = System.currentTimeMillis();
       simLog.logMineAttemptLog(true, true, endTotal - startTotal, endValid - startValid);
@@ -375,19 +380,20 @@ public class LightChainNode extends SkipNode implements LightChainInterface {
     try {
 
       List<NodeInfo> validators = getValidators(blk.toString());
-
+      logger.debug("Got validators: " + validators);
       // add the owner's signature to the block
       SignedBytes mySignature = digitalSignature.signString(blk.getHash());
 
       blk.addSignature(mySignature);
       // iterate over validators and ask them to validate the block
       for (int i = 0; i < validators.size(); ++i) {
-        // TODO: add a dummy signedBytes value
+        logger.debug("Checking Signatures in Block");
+	// TODO: add a dummy signedBytes value
         SignatureResponse response = SignatureResponseOf(underlay.sendMessage(
                 new PoVRequest(blk),
                 validators.get(i).getAddress()));
         SignedBytes signature = response.result;
-
+	logger.debug("Response: " + response + " Signature: " + signature + " My Signature " + mySignature);
         // if one validator returns null, then validation has failed
         if (signature == null) {
           logger.debug("Block Rejected");
@@ -401,6 +407,7 @@ public class LightChainNode extends SkipNode implements LightChainInterface {
       return true;
     } catch (Exception e) {
       e.printStackTrace();
+      logger.error("ERROR Found: " + e);
       return false;
     }
   }
