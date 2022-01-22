@@ -439,7 +439,7 @@ public class SkipNode implements SkipGraphNode {
 
         // If the target is greater than the current node then we should search right
         if (num < targetInt) {
-            logger.debug("Going Right from " + num + " to " + targetInt + "...");
+            //logger.debug("Going Right from " + num + " to " + targetInt + "...");
             // Keep going down levels as long as there is either no right neighbor
             // or the right neighbor has a numID greater than the target
             while (level >= Const.ZERO_LEVEL && (lookup.get(num, level, Const.RIGHT) == null
@@ -462,7 +462,7 @@ public class SkipNode implements SkipGraphNode {
             }
         } else {
             // If the target is less than the current node then we should search left
-            logger.debug("Going Left from " + num + " to " + targetInt + "...");
+            //logger.debug("Going Left from " + num + " to " + targetInt + "...");
             // Keep going down levels as long as there is either no right neighbor
             // or the left neighbor has a numID greater than the target
             while (level >= Const.ZERO_LEVEL && (lookup.get(num, level, Const.LEFT) == null
@@ -531,7 +531,8 @@ public class SkipNode implements SkipGraphNode {
 
             // First execute the search in the right direction and see the result it returns
             if (lookup.get(bestNum, newLevel, Const.RIGHT) != null) {
-                NodeInfoResponse response = NodeInfoResponseOf(underlay.sendMessage(new SearchNameRequest(lookup.get(bestNum, newLevel, Const.RIGHT).getNumID(),
+                logger.debug("Starting Right Search for Name ID"); 
+		NodeInfoResponse response = NodeInfoResponseOf(underlay.sendMessage(new SearchNameRequest(lookup.get(bestNum, newLevel, Const.RIGHT).getNumID(),
                         searchTarget, newLevel, Const.RIGHT), lookup.get(bestNum, newLevel, Const.RIGHT).getAddress()));
                 NodeInfo rightResult = response.result;
                 int commonRight = Util.commonBits(rightResult.getNameID(), searchTarget);
@@ -540,7 +541,8 @@ public class SkipNode implements SkipGraphNode {
             }
             // If the desired result was not found try to search to the left
             if (lookup.get(bestNum, newLevel, Const.LEFT) != null) {
-                NodeInfoResponse response = NodeInfoResponseOf(underlay.sendMessage(new SearchNameRequest(lookup.get(bestNum, newLevel, Const.LEFT).getNumID(),
+                logger.debug("Starting Left Search for Name ID"); 
+		NodeInfoResponse response = NodeInfoResponseOf(underlay.sendMessage(new SearchNameRequest(lookup.get(bestNum, newLevel, Const.LEFT).getNumID(),
                         searchTarget, newLevel, Const.LEFT), lookup.get(bestNum, newLevel, Const.LEFT).getAddress()));
                 NodeInfo leftResult = response.result;
 
@@ -646,7 +648,7 @@ public class SkipNode implements SkipGraphNode {
      * @return list of nodes who have the given name as name ID
      */
     public List<NodeInfo> getNodesWithNameID(String name) {
-        logger.debug("Gathering Node batch ...");
+        logger.debug("Gathering Node batch of Nodes with same ID...");
         try {
             // find a transaction that has the given nameID
             NodeInfo ansNode = searchByNameID(name);

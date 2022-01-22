@@ -149,9 +149,10 @@ public class LightChainNode extends SkipNode implements LightChainInterface {
 
       String name = numToName(blk.getNumID());
 
-      logger.debug("getting transaction batch");
+      logger.debug("Getting transaction batch with same NameID");
       // Get all transaction with this nameID
       List<Transaction> tList = getTransactionsWithNameID(name);
+      logger.debug("Transactions with same Name ID found"); 
       // If number of transactions obtained is less than TX_MIN then we terminate the
       // process
       if (tList == null || tList.size() < params.getTxMin()) {
@@ -173,8 +174,8 @@ public class LightChainNode extends SkipNode implements LightChainInterface {
       logger.debug("Validating new Block ...");
 
       long startValid = System.currentTimeMillis();
-      //boolean isValidated = validateBlock(newBlk);
-      boolean isValidated = true;
+      boolean isValidated = validateBlock(newBlk);
+      //boolean isValidated = true;
       long endValid = System.currentTimeMillis();
       
       logger.debug("Block was validated: " + isValidated);
